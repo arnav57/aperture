@@ -1,13 +1,29 @@
 ---
-title: Hello World
-description: Your first document
+title: Home
+description: Home page for the Aperture project
+icon: House
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
 
-## What is Next?
+## What is Aperture?
 
-<Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
-</Cards>
+Aperture is an **AI enabled Wi-Fi Imaging System** that can theoretically all fit on one SoC.
+
+We do not physically create an actual SoC, instead we create a prototype design with an SDR, FPGA Board, and Host Device for AI Inference.
+We provide some proof of concept that the below pipeline can be turned into an SoC through turning our FPGA design into a GDSII. Since the SDR can also be
+manufactured as a GDSII, theoretically the first two blocks (all the hardware) can become a SoC.
+
+Aperture works by incorporating three main systems:
+
+```mermaid
+flowchart TD
+    A[SDR]
+    B[FPGA]
+    C[AI]
+    A --> B --> C
+```
+
+Each of these systems will be discussed in detail on other pages.
+
+
+
