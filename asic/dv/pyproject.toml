@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "common-dv"
+version = "0.1.0"
+dependencies = ["cocotb"]
+
+[tool.setuptools.packages.find]
+include = ["*"]
