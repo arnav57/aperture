@@ -1,0 +1,173 @@
+---
+title: Quick Start Guide
+description: Setting up everything to develop an ASIC
+icon: ListTodo
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Getting Started
+
+A big part of this project is the hardware accelerated DSP pipeline. It accepts digital IQ data from the SDR, and infers a Channel State Information
+Vector/Matrix, which is sent back to the host. In order to build this properly, we have a open-source RTL + Verification suite in the repository at 
+`aperture/asic`. This page will detail how to get started with using it, writing RTL, and running simulations
+
+### Open-Source Prerequisites
+
+A few things you'll need to actually run things on your side. This guide assumes you are working in windows. If you are using Linux follow along with a venv
+
+<Steps>
+    <Step>
+    #### Install Miniconda
+    - use the link here -> [MiniConda](https://docs.conda.io/en/latest/) 
+    </Step>
+
+    <Step>
+    #### Open the Anaconda Prompt
+    <Callout title='Do not use the Anaconda Powershell Prompt'>
+    They look almost the same, but use the entry in the start menu titled "Anaconda Prompt" going forward.
+    </Callout>
+    You can find it by hitting the `Win` key and searching.
+    </Step>
+
+    <Step>
+    #### Install Cocotb
+    - In the anaconda prompt, run `conda install -c msys2 m2-base m2-make`, 
+    - run `pip install "cocotb~=2.1"`
+    </Step>
+
+    <Step>
+    #### Verify the Cocotb Install
+     - Run `cocotb-config --version`. 
+     - If it prints out `2.1.0` it is installed properly!
+    </Step>
+
+    <Step>
+    #### Install the Aperture DV-IP
+    If you havent cloned the repository yet, clone it using the command below. If you've already cloned it, `cd` into it
+    - `git clone https://github.com/arnav57/aperture.git && cd aperture`
+
+    Then install Aperture's DV IP with:
+    - `cd asic`
+    - `pip install -e .`
+    </Step>
+
+    <Step>
+    #### Verify the Aperture DV-IP Install
+    - Open the python REPL with `python`
+    - Try `from dv.common.uvc import BitMonitor`
+    - Exit the REPL with `exit()`
+    If the import worked (no errors printed) you are good to move onto Questa setup!
+    </Step>
+</Steps>
+
+### Questa Installation
+
+A big part of verifying the DSP pipeline requires simulations. We use Questa FPGA Starter Edition to run these simulations, as we can directly
+simulate some of the DE2-115 FPGA's soft-macros (like the Ethernet PHYs and PLLs). Without a questa installation + license you will not be able to run any simulations
+
+This can take a while. But all the steps are here.
+
+<Steps>
+    <Step>
+    #### Check Existing Installations
+
+    Because we've taken ECE 2277, we might have an older quartus installed on our machines already.
+    This older version of Quartus comes with ModelSim ASE, which we cannot use here
+
+    <Callout title='Dont Have Quartus?'>
+    You can skip this step if you havent installed Quartus. To check, type `vsim` in the anaconda prompt. If a window pops up, follow the steps below
+    If nothing pops up, then skip this step
+    </Callout>
+
+    - Check what you have with `where vsim`
+    The paths look something like this:
+        - QuestaSim -> `C:\altera\25.1std\questa_fse\win64\vsim.exe`
+        - ModelSim ASE -> `C:\intelFPGA_lite\20.1\modelsim_ase\win32aloem\vsim.exe`
+    </Step>
+
+    <Step>
+    #### Install QuestaSim
+    Install QuestaSim 25.1 from Intel's website here. Set the version to 25.1, then select "Windows Software" and then download the
+    ~900 MB exe file. 
+    <Callout title='Make sure its the starter edition'>
+    Somewhere during setup you will chose between Questa, and Questa Starter Edition. Make sure you select the starter edition.
+    </Callout>
+    After its downloaded, Open it and follow the installation instructions through to the end.
+    </Step>
+
+    <Step>
+    #### Verify the QuestaSim Install
+    Close & Reopen the Anaconda Prompt, and then type in
+    - `vsim`
+    
+    It should give you a licensing error, which says something like this.
+    ```
+    Unable to checkout a license. Make sure your license file environment variable (SALT_LICENSE_SERVER)
+    is set correctly and then run 'lmutil lmdiag' to diagnose the problem.
+    Unable to checkout a license.  Vsim is closing.
+    ** Error: Invalid license environment. Application closing.
+    ```
+
+    If it doesnt, you might still be running the ModelSim ASE executable. You can check this by typing `where vsim`.
+    If there are multiple paths, and the Questa path is NOT the topmost path. You have to go into your Windows/User Environment
+    variables and change the ordering to put Questa at the top. 
+
+    After that close and reopen the anaconda prompt, and you should be running the Questa executable now. Make sure you see the licensing error above before continuing
+    </Step>
+</Steps>
+
+### Questa Licensing
+
+Make sure you see the licensing error from the last step before continuning.
+
+<Steps>
+    <Step>
+    #### Altera SSLC Accounts
+    First go to [Altera's Self Service Licensing Center](https://www.altera.com/SSLC). Use the Register button to create an account, or sign in if you already have one
+    </Step>
+
+    <Step>
+    #### Find your Computer's NIC ID
+    You'll need this to get a questa license. 
+    - Run `getmac /v` in the Anaconda Prompt
+    - Look for the Wi-Fi entry, and copy down the physical address. Should be a 12 digit hex string formatted as: `??-??-??-??-??-??`
+    - Delete the hyphens and save it somewhere It should be one long number like: `????????????`
+    This string is called your NIC ID. You will need this in the next step.
+    </Step>
+
+    <Step>
+    #### Get a License
+    Once you've signed in, Select the "Sign-Up for Evaulation or No-Cost Licenses" button in the blue menubar. Once you've made it to that page:
+    - Select "Questa*- FPGA Starter Edition (License: SW-QUESTA)", then scoll down and click Next
+    - Select "Create a new Computer", and you should see a form popup
+    - For License Type, select FIXED
+    - For Computer name, its whatever you want
+    - For Computer Type, select NIC ID. and copy the NIC ID from the previous step (no hyphens)
+    
+    After you've filled out the form click Next. Then select your computer from the list. And click Generate.
+    </Step>
+
+    <Step>
+    #### Check your Email
+    Shortly, youll get en email to the account you used to sign into altera with. It should have a `.dat` file attached to it. 
+    - Download this file, and do NOT modify its contents.
+    </Step>
+
+    <Step>
+    #### Activating the License
+    Rename this downloaded file to `questa_license.dat` and save it somewhere safe, like `C:\licenses`.
+    Take note of the path to this file.
+
+    To activate the license, you must create a Environment Variable called `SALT_LICENSE_SERVER` that has the path to this file.
+    Create this in Windows Settings. Once this is done, close and reopen anaconda prompt, type in `vsim` again, and a window should pop up now.
+
+    If that worked, you now have Questa Installed. You can close the `vsim` popup window
+    </Step>
+</Steps>
+
+With this complete you are now ready to run simulations, and learn about the `aperture/asic` file structure!
+
+
+
