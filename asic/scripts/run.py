@@ -2,7 +2,7 @@ import os, sys, re
 import argparse
 from pathlib import Path
 from cocotb_tools.runner import get_runner
-from run_utils import build_blocks, create_sim_folder
+from run_utils import build_blocks, create_sim_folder, get_lib_dirs
 
 import logging
 logging.basicConfig(
@@ -60,6 +60,15 @@ if __name__ == "__main__":
     run_cmd = f"{py_exe} " + " ".join(py_args)
     with open(str(sim_folder/'run_command'), 'w') as f:
         f.write(run_cmd)
+
+    # get all library dirs (RTL from other blocks may be composed)
+    # ignore the current blocks RTL folder
+    lib_dirs = get_lib_dirs(exclude=tb)
+    logger.info(f"Libraries: {[str(d) for d in lib_dirs]}")
+
+    build_args = ["-sv", "+libext+.sv+.v"]
+    for d in lib_dirs:
+        build_args += ["-y", str(d), f"+incdir+{d}"]
     
     #### Start the build process
     logger.info(f"Setup Complete. Starting Compile ...")
@@ -69,6 +78,7 @@ if __name__ == "__main__":
         sources = block.rtl_files,
         hdl_toplevel = top,
         build_dir = sim_folder,
+        build_args = build_args,
         timescale = ('1ns', '1ps'),
         waves = True
     )

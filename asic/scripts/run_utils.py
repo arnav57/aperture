@@ -111,6 +111,13 @@ def create_sim_folder():
     return sim_folder
 
 
-
-
+def get_lib_dirs(exclude:str = None) -> List[Path]:
+    dirs = []
+    for d in sorted(ASIC_DESIGN.iterdir()):
+        if not d.is_dir() or d.name == exclude:
+            continue
+        rtl_dir = d / 'rtl'
+        if rtl_dir.is_dir():
+            dirs.append(rtl_dir)
+    return dirs
 
