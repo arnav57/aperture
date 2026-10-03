@@ -1,0 +1,92 @@
+---
+title: Wi-Fi Primer
+description: How does a WiFi Transmitter work? How do we estimate the Channel?
+icon: Wifi
+---
+
+## Wifi Transmitters
+
+Wifi waves (radio waves) reach the Rx along several paths due to reflections in the channel (room). Each of these paths has its own time delay $\tau_i$ and complex gain $A_i$. The channel is basically an FIR Filter
+
+$$
+h(t) = \sum A_i \cdot \delta \left( t - \tau_i \right)
+$$
+
+Single Carrier signals suffer from ISI (Inter Symbol Interference) due to this. ISI basically means that every symbol affects the next symbol that will be transmitted. To fix this we basically need a filter at the Rx side
+that basically approximates $h(t)$. Since this channel response $h$ changes with the environment, this must be an adaptive filter.
+
+The good thing is that we can use   the Discrete Fourier Transform (DFT) to make things easier. A property of the DFT is that circular convolution in time is the same as multiplication in the frequency domain
+
+$$
+x_1[n] * x_2[n] \Longleftrightarrow X_1[k] \cdot X_2[k]
+$$
+
+So if we can compute the 64-point DFT of some signal $x$ and of a filter $h$, then the DFT of their circular convolution is basically equal to $H[k] \cdot X[k]$ (in the freq domain). Unfortunately for us, a channel does linear convolution
+We can fix this by using a cyclic prefix to turn this into a circular convolution over the channel
+
+Assume we have one OFDM symbol, which has 64 samples $s_{0} \dots s_{63}$. If we copy the last 16 samples and put them in the front, we acquire the following structure. This turns the linear conv into a circular conv!
+We refer to this circular padded region as the cyclic prefix (CP)
+
+$$
+[ s_{48}  \ s_{49} \ \dots \ s_{63} \  s_0 \  s_1 \dots \ s_{63} ]
+$$
+
+With this trick, two things happen:
+
+1. ISI is eliminated, the previous symbols tail comes before the $s_0$, which we discard
+2. Our DFT trick works due to the circular convolution
+
+The Tx creates the samples $s$ via the Inverse Fast Fourier Transform (IFFT). The Rx discards the CP, and takes the FFT of the remaining 64 samples. This basically gives us the frequency domain value of $H[k] \cdot X[k]$
+
+## Numerical Example
+
+Lets do a small example to show this. 
+
+Assume we have 4-point blocks, a CP of length 1, and a 2-tap channel $h = [1, 0.5]$ We send $p = [a \ b \ c \ d]$.
+
+First our full packet becomes
+$$
+s = [d \ a \ b \ c \ d]
+$$
+
+If we take the circular convolution:
+
+$$
+y_0 = h_0 \cdot s_0 + h_1 \cdot s_{-1}
+y_0 = a + 0.5 \cdot d
+$$
+
+We can repeat this process to obtain all $y_i$
+
+$$
+y_0 = a + 0.5d
+$$ 
+$$
+y_1 = b + 0.5a
+$$
+$$
+y_2 = c + 0.5b
+$$
+$$
+y_3 = d + 0.5c
+$$
+
+## Channel Estimation
+
+Ok, so this should make sense now, but our project relies on estimating the channel's frequency response $H[k]$, how does that come in handy here?
+We've already seen that the below holds true, note that $N[k]$ is just noise here, and $Y[k]$ is our post-FFT vector, basically one complex number per subcarrier.
+
+$$
+Y[k] = H[k] \cdot X[k] + N[k] 
+$$
+
+During the wifi packet, theres a part called the LTF (or L-LTF). Which is a known sequence. So during transmission of the LTF, $X[n]$ is known as $\pm 1$. 
+So for each subcarrier, we can find our estimate for $H[k]$, written as $\hat{H}[k]$ super easily. Note that since $X[n] = \pm 1$ this is an extremely cheap hardware divison!
+
+$$
+\hat{H}[k] = \frac{Y[k]}{X[k]}
+$$
+
+And boom we have it done!
+
+

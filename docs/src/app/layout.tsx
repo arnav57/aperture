@@ -1,6 +1,7 @@
 import { Roboto } from 'next/font/google';
 import { Provider } from '@/components/provider';
 import './global.css';
+import 'katex/dist/katex.css';
 
 const inter = Roboto({
   subsets: ['latin'],
