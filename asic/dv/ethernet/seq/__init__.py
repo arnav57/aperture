@@ -1,0 +1,1 @@
+from .startup import ethernet_init_seq

@@ -13,6 +13,7 @@ logging.basicConfig(
 #### FILEPATHS
 
 ASIC_ROOT    = Path(__file__).parent.parent.resolve()
+ASIC_EXTERNAL= ASIC_ROOT / 'external'
 ASIC_SCRIPTS = ASIC_ROOT / 'scripts'
 ASIC_DESIGN  = ASIC_ROOT / 'design'
 ASIC_DV      = ASIC_ROOT / 'dv'
@@ -24,10 +25,15 @@ class Block:
     rtl_files: List[Path]
     aux_files: List[Path] | None = None
 
+@dataclass
+class Library:
+    name: str
+    rtl_dir: Path
+
 def validate_paths():
     # check if asic-scripts/design/dv exist
     logger = logging.getLogger("RUN-UTILS :: validate_paths")
-    for path in [ASIC_ROOT, ASIC_DESIGN, ASIC_DV, ASIC_SCRIPTS]:
+    for path in [ASIC_ROOT, ASIC_DESIGN, ASIC_DV, ASIC_SCRIPTS, ASIC_EXTERNAL]:
         if path.exists() and path.is_dir():
             next
         else:
@@ -77,8 +83,8 @@ def build_blocks() -> Dict[str, Block]:
             testcases = [f for f in test_path.iterdir() if f.is_file() and f.suffix in test_exts]
         logger.info(f"Found {len(testcases)} testcases")
         # get the aux sources 
-        aux_dv_path   = dv_path / 'aux'
-        aux_rtl_path  = design_path / 'aux'
+        aux_dv_path   = dv_path / 'misc'
+        aux_rtl_path  = design_path / 'misc'
 
         aux_dv_files = []
         aux_rtl_files = []
@@ -89,15 +95,16 @@ def build_blocks() -> Dict[str, Block]:
         if aux_rtl_path.is_dir():
             aux_rtl_files = [f for f in aux_rtl_path.iterdir() if f.is_file() and f.suffix in rtl_exts]
 
-        aux_files = aux_dv_files + aux_rtl_files
-        logger.info(f"Found {len(aux_files)} aux files")
+        rtl_files += aux_rtl_files 
+        rtl_files += aux_dv_files
+        logger.info(f"Found {len(aux_rtl_files) + len(aux_dv_files)} aux files")
 
         # create a block object from this data, add it to the dict
         block = Block(
             name = bldir,
             testcases = testcases,
             rtl_files = rtl_files,
-            aux_files = aux_files
+            aux_files = aux_rtl_files + aux_dv_files
         )
         blocks.setdefault(bldir, block)
     
@@ -121,3 +128,16 @@ def get_lib_dirs(exclude:str = None) -> List[Path]:
             dirs.append(rtl_dir)
     return dirs
 
+def get_external_libs() -> List[Path]:
+    libs = []
+
+    for lib in sorted(ASIC_EXTERNAL.iterdir()):
+
+        if not lib.is_dir():
+            continue
+        
+        rtl_dir = lib / 'rtl'
+        if rtl_dir.is_dir():
+            libs.append(rtl_dir)
+    
+    return libs
