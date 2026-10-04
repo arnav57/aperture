@@ -16,7 +16,7 @@ module std_data_sync #(
 logic [NUM_FLOPS-1:0] flop_r;
 
 // chain NUM_FLOPS flops together
-always_ff @(posedge clk, negedge rstn_i) begin
+always_ff @(posedge clk_i, negedge rstn_i) begin
 	if(~rstn_i) begin
 		flop_r <= {NUM_FLOPS{RESET_VAL}};
 	end else begin

@@ -46,7 +46,7 @@ logic clk_en_s3r;
 logic clk_gated_int;
 
 
-std_data_sync3ff I_data_sync_clk_en_s3r (
+std_data_sync I_data_sync_clk_en_s3r (
     .rstn_i(rstn_sync),
     .clk_i (clk_fr_int),
     .data_i(clk_en_i),
