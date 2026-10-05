@@ -4,7 +4,7 @@ from typing import List, Dict
 from pprint import pformat, pprint
 from datetime import datetime
 
-import logging
+import logging, os
 logging.basicConfig(
     level=logging.INFO,
     format="[{name:^30}][{levelname:^8}]: {message}",
@@ -17,6 +17,11 @@ ASIC_EXTERNAL= ASIC_ROOT / 'external'
 ASIC_SCRIPTS = ASIC_ROOT / 'scripts'
 ASIC_DESIGN  = ASIC_ROOT / 'design'
 ASIC_DV      = ASIC_ROOT / 'dv'
+
+os.environ["ASIC_SCRIPTS"] = str(ASIC_SCRIPTS)
+os.environ["ASIC_DESIGN"]  = str(ASIC_DESIGN)
+os.environ["ASIC_DV"]      = str(ASIC_DV)
+os.environ["ASIC_ROOT"]    = str(ASIC_ROOT)
 
 @dataclass
 class Block:

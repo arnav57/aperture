@@ -31,7 +31,7 @@ module iris_clkgen (
     /// Refclk [50 MHz] --> |  PLL0  | -----> eth_clk_shift [125 MHz, 90 deg]
     ///                     |--------| -----> dp_clk        [150 MHz, 00 deg]
     /*/
-    iris_pll	iris_pll_inst (
+    iris_pll I_pll_0 (
         .areset ( ~rstn_i          ),
         .inclk0 ( refclk_i         ),
         .c0     ( eth_clk_main_fr  ),
@@ -74,11 +74,6 @@ module iris_clkgen (
         .rstn_o     ( rstn_dp_clk_o    ),
         .clk_fr_o   (  /* FLOATING  */ )
     );
-
-
-
-
-    
 
 
 endmodule : iris_clkgen
