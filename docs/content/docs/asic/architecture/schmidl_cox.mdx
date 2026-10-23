@@ -1,0 +1,78 @@
+---
+title: Detecting on OFDM Packet
+description: How do we detect an OFDM packet?
+icon: Sigma
+---
+
+## Schmidl-Cox Autocorrelation
+
+The first real stage in our DSP pipeline is detecting the start of some Wifi (OFDM) packet. Typically an OFDM packet is buried somewhere within some data stream, and it isnt easy to see visually.
+The trick to detecting an OFDM packet is to use a **Schmidl-Cox Style Autocorrelator**. 
+
+WiFi Packets contain the **Short Training Field (STF)**, this can be used to detect a packet. The STF Contains a repeated pattern every 16 samples. Thus we can use a simple autocorrelator to detect when
+the STF is present. The output of this autocorrelation would be a plateau. Based on some threshold we can decide if the OFDM packet is really here or not. 
+
+The problem with real world signals is that they may have differing magnitudes, thus our plateau would be different sizes, and our simple threshold would break down rather quickly. In order to fix this we choose to
+**normalize** the plateau by incorporating a metric of the **signal energy**. This way our plateau is always the same size. This normalization, and the previous 2 items make up the heart of the schmidl-cox autocorrelator.
+
+1. Lag 16 Autocorrelation, $y=\text{DT-CACF}(L=16)$
+1. Current Signal Energy, $E(x,n)$.
+1. Decision Function, $\mathcal{L}(y)$
+
+### Lag-16 Autocorrelation
+
+Typical autocorrelators are not super complicated. The formula is given below for a typical lag $L$ autocorrelator.
+
+$$
+ \text{DT-ACF}[L] = \sum_{k} x[k] \cdot x[k + L]
+$$
+
+However our numbers are complex, $x \in \mathbb{C}$, where each $x = I+jQ$. Thus a **Discrete Time, Complex Autocorrelation** over a window of $W$ samples is given below. Note that $\bar{x}$ denotes the complex conjugate of $x$, and the newest sample is $x[n]$.
+
+$$
+    y[n] = \text{DT-CACF} = \sum_{k=0}^{W-1} x[n-L-k] \cdot \bar{x}[n-k], \qquad L = W = 16
+$$
+
+This is not cheap. Computed directly, it requires $W$ complex products and $W$ complex additions per time-step. We can make this MUCH cheaper with a **sliding window**: each new sample adds one new product and removes the product that just left the window.
+
+$$
+    y[n] = y[n-1] + \underbrace{x[n-L] \cdot \bar{x}[n]}_{\text{new term}} - \underbrace{x[n-L-W] \cdot \bar{x}[n-W]}_{\text{old term}}
+$$
+
+This would cut down the operations per cycle to just 3 multiplications and 3 additions per cycle. Basically ops/cycle doesnt depend on $W$ anymore.
+
+### Current Signal Energy
+
+We also need our measure of signal energy over the same chosen window $W$. The equation is given below
+
+$$
+    E[n] = \sum_{k=0}^{W-1} |x[n-k]|^2
+$$
+
+Once again, we opt to use a sliding window method for this to lower operations per cycle
+
+$$
+    E[n] =  E[n-1] + |x[n]|^2 - |x[n-W]|^2
+$$
+
+### Decision Metric
+
+In order to determine if our OFDM packet arrive, we start with normalization of the $y[n]$ signal using $E[n]$.
+
+$$
+        P[n] = \frac{|y[n]|^2}{E^2[n]}
+$$
+
+Our decision for whether an OFDM packet is detected or not is based on this $P[n]$.
+
+$$
+\mathcal{L}(y) = P[n] > G \implies \frac{|y[n]|^2}{E^2[n]} > G
+$$
+
+We dont do a division here, we'd rather multiply. So cross-multiplying the above equation we obtain our decision metric, $\mathcal{L}$
+
+$$
+    \mathcal{L}(y) = |y[n]|^2 > G \cdot E^2[n] 
+$$
+
+
