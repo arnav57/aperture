@@ -179,7 +179,7 @@ udp_complete udp_inst (
     .s_ip_payload_axis_tvalid(1'b0),
 
     .m_udp_hdr_valid(udp_hdr_valid),
-    .m_udp_hdr_ready(udp_hdr_ready),
+    .m_udp_hdr_ready(1'b1), // always accept RX headers
     .m_udp_ip_source_ip(udp_ip_source_ip),
     .m_udp_ip_dest_ip(udp_ip_dest_ip),
     .m_udp_source_port(udp_source_port),
@@ -192,7 +192,7 @@ udp_complete udp_inst (
     .m_udp_payload_axis_tlast(udp_rx_stream.tlast),
     .m_udp_payload_axis_tuser(udp_rx_stream.tuser),
 
-    .s_udp_hdr_valid(udp_hdr_valid),
+    .s_udp_hdr_valid(1'b0), // never transmit anything
     .s_udp_hdr_ready(udp_hdr_ready),
     .s_udp_ip_source_ip(udp_ip_dest_ip), 
     .s_udp_ip_dest_ip(udp_ip_source_ip), 

@@ -20,7 +20,7 @@ def get_wifi_data():
     
     asic_scripts = Path(asic_scripts)
     wifi_data_file = asic_scripts / 'wifi' / 'wifi_iq.bin'
-    wifi_data = np.fromfile(wifi_data_file, dtype=np.int8)
+    wifi_data = np.fromfile(wifi_data_file, dtype='>i2')
 
     return wifi_data
 
@@ -54,7 +54,7 @@ async def iris_base_test(dut):
 
     wifi_iq = get_wifi_data()
     raw_iq  = wifi_iq.tobytes()
-    raw_iq  = raw_iq[: (len(raw_iq) // 16) & ~1]
+    raw_iq  = raw_iq[: (len(raw_iq) // 16) & ~3]
 
     # create a Virtual PHY for ENET1
     enet1_phy = RgmiiPhy(
@@ -65,16 +65,16 @@ async def iris_base_test(dut):
 
     await iris_powerup_seq(dut)
     
-    bytes_per_packet = 1024
+    bytes_per_packet = 512
     for i in range(0, len(raw_iq), bytes_per_packet):
         await iris_send_packet(enet1_phy, raw_iq[i : i + bytes_per_packet])
 
 
     await enet1_phy.rx.wait()
-    await Timer(20, 'us')
+    await Timer(50, 'us')
 
-    expected = np.frombuffer(raw_iq, dtype=np.int8).reshape(-1, 2)
-    got      = np.array(iq_mon.samples, dtype=np.int8).reshape(-1, 2)
+    expected = np.frombuffer(raw_iq, dtype='>i2').reshape(-1, 2).astype(np.int16)
+    got      = np.array(iq_mon.samples, dtype=np.int16).reshape(-1, 2)
 
     n   = min( len(got), len(expected) )
     bad = np.flatnonzero( (got[:n] != expected[:n]).any(axis=1) )

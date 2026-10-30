@@ -30,7 +30,7 @@ cfg.ChannelBandwidth = 'CBW20';
 cfg.PSDULength = 100;       % PSDU length in bytes
 
 % IQ quantization
-IQ_WIDTH = 8;
+IQ_WIDTH = 16;
 
 % Noise before/after packet
 NUM_NOISE_BEFORE = 5000;
@@ -79,15 +79,15 @@ rx = [
 
 %% Normalize complete waveform
 
-% Keep the waveform safely inside the signed 8-bit range.
+% Keep the waveform safely inside the signed bit range.
 rx = rx / max(abs(rx));
 
 %% Convert complex IQ to signed integers
 
 MAX_VALUE = 2^(IQ_WIDTH - 1) - 1;
 
-I = int8(round(real(rx) * MAX_VALUE));
-Q = int8(round(imag(rx) * MAX_VALUE));
+I = int16(round(real(rx) * MAX_VALUE));
+Q = int16(round(imag(rx) * MAX_VALUE));
 
 %% Interleave I and Q
 
@@ -101,7 +101,7 @@ Q = int8(round(imag(rx) * MAX_VALUE));
 %   Q2
 %   ...
 
-iq = zeros(2 * length(rx), 1, 'int8');
+iq = zeros(2 * length(rx), 1, 'int16');
 
 iq(1:2:end) = I;
 iq(2:2:end) = Q;
@@ -116,7 +116,7 @@ if fid == -1
     error('Could not open output file.');
 end
 
-fwrite(fid, iq, 'int8');
+fwrite(fid, iq, 'int16');
 
 fclose(fid);
 

@@ -56,11 +56,11 @@ module iris_top (
         .udp_rx_tlast       ( enet1_rx_tlast        ),
         .udp_rx_tuser       ( /* FLOATING */        ),
         // AXI-S i/f to Ethernet 1 MAC
-        .udp_tx_tdata       ( /* FLOATING */        ),
-        .udp_tx_tvalid      ( /* FLOATING */        ),
-        .udp_tx_tready      ( /* FLOATING */        ),
-        .udp_tx_tlast       ( /* FLOATING */        ),
-        .udp_tx_tuser       ( /* FLOATING */        ),
+        .udp_tx_tdata       ( 8'd0       ),
+        .udp_tx_tvalid      ( 1'b0       ),
+        .udp_tx_tready      ( /* FLOATING */ ),
+        .udp_tx_tlast       ( 1'b0       ),
+        .udp_tx_tuser       ( 1'b0       ),
         // Top Level ENET1 Pins 
         .ENET1_GTX_CLK      ( ENET1_GTX_CLK         ),
         .ENET1_TX_EN        ( ENET1_TX_EN           ),

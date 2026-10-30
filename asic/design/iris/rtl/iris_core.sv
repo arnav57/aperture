@@ -12,8 +12,8 @@ module iris_core (
 
 );
 
-    logic signed [7:0] i;
-    logic signed [7:0] q;
+    logic signed [15:0] i;
+    logic signed [15:0] q;
     logic              iq_valid;
 
 

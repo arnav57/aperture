@@ -2,8 +2,11 @@
 `default_nettype none
 
 module cmp_mul #(
-    parameter int INPUT_WIDTH = 8
+    parameter int INPUT_WIDTH = 16
 ) ( 
+    input wire clk_i,
+    input wire rstn_i,
+
     // first operand is a + jb;
     input wire signed [INPUT_WIDTH-1:0] a_i,
     input wire signed [INPUT_WIDTH-1:0] b_i,
@@ -17,23 +20,27 @@ module cmp_mul #(
     output wire signed [2*INPUT_WIDTH:0] y_o
 );
 
-    // TODO: Optimize this shit later
+    // Sign Extensions
+    logic signed [INPUT_WIDTH:0] a_ext, b_ext, c_ext, d_ext;
+    assign a_ext = { a_i[INPUT_WIDTH-1], a_i[INPUT_WIDTH-1:0] }; 
+    assign b_ext = { b_i[INPUT_WIDTH-1], b_i[INPUT_WIDTH-1:0] }; 
+    assign c_ext = { c_i[INPUT_WIDTH-1], c_i[INPUT_WIDTH-1:0] }; 
+    assign d_ext = { d_i[INPUT_WIDTH-1], d_i[INPUT_WIDTH-1:0] }; 
 
-    logic signed [2*INPUT_WIDTH:0] ac;
-    logic signed [2*INPUT_WIDTH:0] bd;
-    logic signed [2*INPUT_WIDTH:0] bc;
-    logic signed [2*INPUT_WIDTH:0] ad;
+    // Additions
+    logic signed [INPUT_WIDTH:0] a_add_b;
+    logic signed [INPUT_WIDTH:0] c_add_d;
+    assign a_add_b = a_ext + b_ext;
+    assign c_add_d = c_ext + d_ext;
 
-    logic signed [2*INPUT_WIDTH:0] x;
-    logic signed [2*INPUT_WIDTH:0] y;
+    // Pipelined Multiplication
+    always_ff @( posedge clk_i, negedge rstn_i ) begin
+        if (~rstn_i) begin
 
-    assign ac = a_i * c_i;
-    assign bd = b_i * d_i;
-    assign bc = b_i * c_i;
-    assign ad = a_i * d_i;
+        end else begin
 
-    assign x_o = (ac - bd);
-    assign y_o = (bc + ad);
+        end
+    end
 
 endmodule : cmp_mul
 
