@@ -29,6 +29,14 @@ module iris_core (
         .valid_o            ( iq_valid          )
     );
 
+/// STF Detect
+    stf_det I_stf_det (
+        .clk_i      ( clk_i    ),
+        .rstn_i     ( rstn_i   ),
+        .I_i        ( i        ),
+        .Q_i        ( q        ),
+        .IQ_valid_i ( iq_valid )
+    );
 
 
 endmodule : iris_core

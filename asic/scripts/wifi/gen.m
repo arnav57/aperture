@@ -116,7 +116,7 @@ if fid == -1
     error('Could not open output file.');
 end
 
-fwrite(fid, iq, 'int16');
+fwrite(fid, iq, 'int16', 'ieee-be');
 
 fclose(fid);
 
