@@ -10,7 +10,10 @@ module stf_det (
     // Aligned IQ Stream
     input wire signed [15:0] I_i,
     input wire signed [15:0] Q_i,
-    input wire signed        IQ_valid_i
+    input wire               IQ_valid_i,
+
+    // STF Detect Flag
+    output wire stf_det_o
 );
 
 ///////////////////////////////////////////////////////
@@ -25,26 +28,54 @@ module stf_det (
     logic signed [35:0] acf_raw_re;
     logic signed [35:0] acf_raw_im;
 
-    logic signed [35:0] acf_abs_re;
-    logic signed [35:0] acf_abs_im;
+    logic signed [15:0] I_d16;
+    logic signed [15:0] Q_d16;
 
+    logic signed [35:0] energy;
+
+/// Lag 16 Autocorrelator + Delay Line
     stf_acf I_stf_acf (
         .clk_i ( clk_i ),
         .rstn_i ( rstn_i ),
-
-
+        // input IQ bus
         .I_i (I_i) ,
         .Q_i (Q_i),
-        .valid_i (IQ_valid_i),
-
+        .IQ_valid_i (IQ_valid_i),
+        // autocorrelation out
         .acf_re_o(acf_raw_re),
-        .acf_im_o(acf_raw_im)
+        .acf_im_o(acf_raw_im),
+        // To stf_energy
+        .I_d16_o(I_d16),
+        .Q_d16_o(Q_d16)
     );
 
-    assign acf_abs_re = acf_raw_re[35] ? -acf_raw_re : acf_raw_re;
-    assign acf_abs_im = acf_raw_im[35] ? -acf_raw_im : acf_raw_im;
+/// Current Signal Energy
+    stf_energy I_stf_energy (
+        .clk_i ( clk_i ),
+        .rstn_i ( rstn_i ),
+        // input IQ bus
+        .I_i (I_i) ,
+        .Q_i (Q_i),
+        .IQ_valid_i (IQ_valid_i),
+        .I_d16_i (I_d16),
+        .Q_d16_i (Q_d16),
+        // Energy
+        .E_o ( energy )
+    );
 
-    logic signed [36:0] acf_mag;
-    assign acf_mag = acf_abs_re + acf_abs_im;
-    
+/// STF Detection Proposal
+    stf_decision I_stf_decision (
+    	.clk_i    (clk_i),
+    	.rstn_i   (rstn_i),
+        // from stf_acf
+    	.acf_re_i (acf_raw_re),
+    	.acf_im_i (acf_raw_im),
+        // from stf_energy
+    	.energy_i (energy),
+    	.stf_det_o(stf_det_o)
+    );
+
+
 endmodule : stf_det
+
+`default_nettype wire

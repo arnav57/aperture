@@ -9,6 +9,11 @@ module iris_clkgen (
     input wire rstn_i,      // Main async active low reset
 
     // Generated Clocks (free running)
+    output wire eth_clk_main_fr_o,
+    output wire eth_clk_shift_fr_o,
+    output wire dp_clk_fr_o,
+
+    // Gated Clocks
     output wire eth_clk_main_o,
     output wire eth_clk_shift_o,
     output wire dp_clk_o,
@@ -19,18 +24,22 @@ module iris_clkgen (
 
     // Status Flags
     output wire pll_lock_o
-);  
+);
 
-    logic eth_clk_main_fr;;
+    logic eth_clk_main_fr;
     logic eth_clk_shift_fr;
     logic dp_clk_fr;
 
+    assign eth_clk_main_fr_o  = eth_clk_main_fr;
+    assign eth_clk_shift_fr_o = eth_clk_shift_fr;
+    assign dp_clk_fr_o        = dp_clk_fr;
+
     ///// Altera PLL Instantiation
-    /*/
+    /*
     ///                     |--------| -----> eth_clk_main  [125 MHz, 00 deg]
     /// Refclk [50 MHz] --> |  PLL0  | -----> eth_clk_shift [125 MHz, 90 deg]
     ///                     |--------| -----> dp_clk        [150 MHz, 00 deg]
-    /*/
+    */
     iris_pll I_pll_0 (
         .areset ( ~rstn_i          ),
         .inclk0 ( refclk_i         ),
@@ -52,7 +61,7 @@ module iris_clkgen (
         .clk_div_i  ( 4'b1            ),
         .clk_o      ( eth_clk_main_o  ),
         .rstn_o     ( rstn_eth_clk_o  ),
-        .clk_fr_o   ( /* FLOATING  */ )
+        .clk_fr_o   (  )
     );
 
     std_clk_ctrl I_clk_ctrl_eth_clk_shift (
@@ -61,8 +70,8 @@ module iris_clkgen (
         .clk_en_i   ( 1'b1             ),
         .clk_div_i  ( 4'b1             ),
         .clk_o      ( eth_clk_shift_o  ),
-        .rstn_o     (  /* FLOATING  */ ),
-        .clk_fr_o   (  /* FLOATING  */ )
+        .rstn_o     (   ),
+        .clk_fr_o   (   )
     );
 
     std_clk_ctrl I_clk_ctrl_dp_clk (
@@ -72,8 +81,10 @@ module iris_clkgen (
         .clk_div_i  ( 4'b1             ),
         .clk_o      ( dp_clk_o         ),
         .rstn_o     ( rstn_dp_clk_o    ),
-        .clk_fr_o   (  /* FLOATING  */ )
+        .clk_fr_o   (  )
     );
+
+
 
 
 endmodule : iris_clkgen

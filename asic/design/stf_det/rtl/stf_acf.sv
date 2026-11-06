@@ -7,10 +7,14 @@ module stf_acf (
 
     input wire signed [15:0] I_i,
     input wire signed [15:0] Q_i,
-    input wire               valid_i,
+    input wire               IQ_valid_i,
 
     output wire signed [35:0] acf_re_o,
-    output wire signed [35:0] acf_im_o
+    output wire signed [35:0] acf_im_o,
+
+    // ALso export some taps from the delay line for use in the energy calculation
+    output wire signed [15:0] I_d16_o,
+    output wire signed [15:0] Q_d16_o
 );
 
 /// need 32 cc delay line for sliding window of 16.
@@ -23,7 +27,7 @@ module stf_acf (
             I_dNr <= 'd0;
             Q_dNr <= 'd0;
         end else begin
-            if (valid_i) begin
+            if (IQ_valid_i) begin
                 I_dNr[0] <= I_i;
                 Q_dNr[0] <= Q_i;
                 for (int i = 1 ; i < NUM_LAGS ; i++) begin
@@ -44,6 +48,8 @@ module stf_acf (
     logic signed [15:0] x_d16_im;
     assign x_d16_re = I_dNr[15];
     assign x_d16_im = Q_dNr[15];
+    assign I_d16_o  = I_dNr[15];
+    assign Q_d16_o  = Q_dNr[15];
 
     logic signed [15:0] x_d32_re;
     logic signed [15:0] x_d32_im;
@@ -95,7 +101,7 @@ always_ff @(posedge clk_i, negedge rstn_i) begin
     if (~rstn_i) begin
         valid_dNr <= 3'd0;
     end else begin
-        valid_dNr <= {valid_dNr[1:0], valid_i}; // this is a shift register
+        valid_dNr <= {valid_dNr[1:0], IQ_valid_i}; // this is a shift register
     end
 end
 

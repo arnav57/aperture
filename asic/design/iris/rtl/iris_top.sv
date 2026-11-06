@@ -18,20 +18,27 @@ module iris_top (
 	input  wire        ENET1_RX_DV       ,
 	input  wire [3:0]  ENET1_RX_DATA
 
-);  
+);
 
 
 /// Clock + Reset Generation
 
     logic eth_clk_main, eth_clk_shift, dp_clk;
+    logic eth_clk_main_fr, eth_clk_shift_fr, dp_clk_fr;
     logic rstn_eth_clk, rstn_dp_clk;
 
     iris_clkgen I_clkgen (
         .refclk_i               ( refclk_i              ),
         .rstn_i                 ( rstn_i                ),
+        // gated clocks
         .eth_clk_main_o         ( eth_clk_main          ),
         .eth_clk_shift_o        ( eth_clk_shift         ),
         .dp_clk_o               ( dp_clk                ),
+        // free running clocks
+        .eth_clk_main_fr_o      ( eth_clk_main_fr          ),
+        .eth_clk_shift_fr_o     ( eth_clk_shift_fr         ),
+        .dp_clk_fr_o            ( dp_clk_fr                ),
+        // sync resets + status
         .rstn_eth_clk_o         ( rstn_eth_clk          ),
         .rstn_dp_clk_o          ( rstn_dp_clk           ),
         .pll_lock_o             ( pll_lock_o            )
@@ -44,10 +51,10 @@ module iris_top (
 
     ethernet I_enet_1 (
         // Clocks and Resets
-        .clk_125_i          ( eth_clk_main          ),
-        .clk_125_90_i       ( eth_clk_shift         ),
+        .clk_125_i          ( eth_clk_main_fr       ),
+        .clk_125_90_i       ( eth_clk_shift_fr      ),
         .rstn_clk_125_i     ( rstn_eth_clk          ),
-        .compute_clk_i      ( dp_clk                ),
+        .compute_clk_i      ( dp_clk_fr             ),
         .rstn_compute_clk_i ( rstn_dp_clk           ),
         // AXI-S i/f from Ethernet 1 MAC
         .udp_rx_tdata       ( enet1_rx_tdata        ),
@@ -61,7 +68,7 @@ module iris_top (
         .udp_tx_tready      ( /* FLOATING */ ),
         .udp_tx_tlast       ( 1'b0       ),
         .udp_tx_tuser       ( 1'b0       ),
-        // Top Level ENET1 Pins 
+        // Top Level ENET1 Pins
         .ENET1_GTX_CLK      ( ENET1_GTX_CLK         ),
         .ENET1_TX_EN        ( ENET1_TX_EN           ),
         .ENET1_TX_DATA      ( ENET1_TX_DATA         ),
@@ -70,14 +77,14 @@ module iris_top (
         .ENET1_RX_DATA      ( ENET1_RX_DATA         )
     );
 
-/// Iris Core 
+/// Iris Core
     iris_core I_core (
-        .clk_i              ( dp_clk                    ),
+        .clk_i              ( dp_clk_fr                 ),
         .rstn_i             ( rstn_dp_clk               ),
         .enet1_rx_tdata     ( enet1_rx_tdata            ),
         .enet1_rx_tvalid    ( enet1_rx_tvalid           ),
         .enet1_rx_tlast     ( enet1_rx_tlast            )
-    );      
+    );
 
 endmodule : iris_top
 
