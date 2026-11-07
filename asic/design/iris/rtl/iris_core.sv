@@ -38,6 +38,9 @@ module iris_core (
         .IQ_valid_i ( iq_valid )
     );
 
+/// Coarse CFO Estimation
+
+
 
 endmodule : iris_core
 

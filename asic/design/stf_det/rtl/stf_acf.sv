@@ -11,6 +11,7 @@ module stf_acf (
 
     output wire signed [35:0] acf_re_o,
     output wire signed [35:0] acf_im_o,
+    output wire               acf_valid_o,
 
     // ALso export some taps from the delay line for use in the energy calculation
     output wire signed [15:0] I_d16_o,
@@ -114,10 +115,11 @@ always_ff @(posedge clk_i, negedge rstn_i) begin
         acf_re <= acf_re + new_term_re - old_term_re;
         acf_im <= acf_im + new_term_im - old_term_im;
     end
-end 
+end
 
 assign acf_re_o = acf_re;
 assign acf_im_o = acf_im;
+assign acf_valid_o = valid_dNr[2];
 
 endmodule : stf_acf
 

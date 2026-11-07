@@ -12,10 +12,16 @@ Aperture's RTL Simulations use a single build script `asic/scripts/run.py`. It t
 - `--top` the name of the top level RTL file. There are only a few correct choices per block. Take a look at the RTL under `asic/design/<block>/rtl` and choose one of them (without the .sv)
 
 The script will dump all files under `asic/sim/<date-time>`. Including the `vsim.wlf` file we will need to actually view the waveforms.
- - In order to view the waveforms use `vsim --view <path to vsim.wlf>`
+ - In order to view the waveforms use `vsim -view <path to vsim.wlf>`
 
-An example command to run the CORDIC implementation's base test is given below (assuming you are running from `asic/`)
+An example command to run the CORDIC implementation's base tests is given below (assuming you are running from `asic/`)
 
 ```bash
 cls & python scripts\run.py --tb cordic --test cordic_base_test --top cordic
+```
+
+If you'd like to run top level tests instead, you can try the base test below, or switch the testname to your preference!
+```bash
+cls & python scripts\run.py --tb iris --test iris_base_test --top iris_top
+
 ```

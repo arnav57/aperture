@@ -10,6 +10,7 @@ module cordic_stage #(
 ) (
     input wire clk_i,
     input wire rstn_i,
+    input wire vmode_i, // assuemd static (0 = rotation mode, 1 = vectoring mode)
 
     // per stage inputs
     input wire signed [BAR_ANGLE_WIDTH-1:0] theta_i, // angle step size for this stage (BAR)
@@ -37,7 +38,11 @@ logic signed [BAR_ANGLE_WIDTH-1:0] z_r;
 
 // direction is comb
 logic                       step_down;
-assign step_down = (z_i[BAR_ANGLE_WIDTH-1]); // direction of step = sign(angle_i) which can be found with MSb of z_i
+
+// rotation mode  -> rotate toward z=0
+// vectoring mode -> rotate toward y=0
+assign step_down = (vmode_i) ? ~y_i[VECTOR_WIDTH-1]    // y >= 0 -> means rotate CW (-ve) to reduce y
+                             : z_i[BAR_ANGLE_WIDTH-1]; // z < 0  -> means roatate CCW
 
 // reuse the shifters
 logic signed [VECTOR_WIDTH-1:0] y_asr;
@@ -54,12 +59,10 @@ always_ff @(posedge clk_i, negedge rstn_i) begin
     end else begin
         if (en_i) begin
             if (step_down) begin
-                // if we rotate CCW (-ve)
                 x_r <= x_i + y_asr;
                 y_r <= y_i - x_asr;
                 z_r <= z_i + theta_i;
             end else begin
-                // if we rotate CW (+ve)
                 x_r <= x_i - y_asr;
                 y_r <= y_i + x_asr;
                 z_r <= z_i - theta_i;

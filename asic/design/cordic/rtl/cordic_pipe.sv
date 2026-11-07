@@ -11,6 +11,7 @@ module cordic_pipe #(
 )(
     input wire clk_i,
     input wire rstn_i,
+    input wire vmode_i,
 
     // inputs to CORDIC algorithm (Q3.15)
     input wire signed [VECTOR_WIDTH-1:0]    x_i,
@@ -66,6 +67,7 @@ generate for (i = 0; i < NUM_STAGES ; i++ ) begin : gen_cordic_pipe
         .clk_i (clk_i),
         .rstn_i (rstn_i),
         .theta_i ( theta_values[i] ),
+        .vmode_i ( vmode_i ),
         // inputs
         .x_i ( x_mesh[i] ),
         .y_i ( y_mesh[i] ),

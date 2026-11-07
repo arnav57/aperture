@@ -12,6 +12,11 @@ module stf_det (
     input wire signed [15:0] Q_i,
     input wire               IQ_valid_i,
 
+    // Outputs of ACF and validity
+    output wire signed [35:0] acf_re_o,
+    output wire signed [35:0] acf_im_o,
+    output wire               acf_valid_o,
+
     // STF Detect Flag
     output wire stf_det_o
 );
@@ -44,6 +49,7 @@ module stf_det (
         // autocorrelation out
         .acf_re_o(acf_raw_re),
         .acf_im_o(acf_raw_im),
+        .acf_valid_o(acf_valid_o),
         // To stf_energy
         .I_d16_o(I_d16),
         .Q_d16_o(Q_d16)
@@ -75,6 +81,8 @@ module stf_det (
     	.stf_det_o(stf_det_o)
     );
 
+    assign acf_re_o = acf_raw_re;
+    assign acf_im_o = acf_raw_im;
 
 endmodule : stf_det
 
