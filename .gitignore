@@ -1,1 +1,3 @@
-.zed_agent
+# use agents to help with architecture, and mostly for DV
+.agents
+AGENT.md
