@@ -99,6 +99,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../asic/design/math/rtl/cmp_mul.s
 # cordic
 set_global_assignment -name SYSTEMVERILOG_FILE ../asic/design/cordic/rtl/cordic.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../asic/design/cordic/rtl/cordic_fold.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../asic/design/cordic/rtl/cordic_prefold.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../asic/design/cordic/rtl/cordic_pipe.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../asic/design/cordic/rtl/cordic_stage.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../asic/design/cordic/rtl/cordic_transform.sv
@@ -108,6 +109,12 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../asic/design/stf_det/rtl/stf_de
 set_global_assignment -name SYSTEMVERILOG_FILE ../asic/design/stf_det/rtl/stf_acf.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../asic/design/stf_det/rtl/stf_energy.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../asic/design/stf_det/rtl/stf_decision.sv
+
+# coarse_cfo
+set_global_assignment -name SYSTEMVERILOG_FILE ../asic/design/cfo_coarse/rtl/cfo_coarse_est.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../asic/design/cfo_coarse/rtl/cfo_derotate.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../asic/design/cfo_coarse/rtl/cfo_coarse.sv
+
 
 # ---------------------------------------------------------------------------
 # I/O constraints for the Terasic DE2-115 FPGA board
@@ -160,4 +167,7 @@ set_global_assignment -name SDC_FILE iris_top.sdc
 
 set_global_assignment -name OPTIMIZATION_MODE "AGGRESSIVE PERFORMANCE"
 set_global_assignment -name SEED 2
+
+
+
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

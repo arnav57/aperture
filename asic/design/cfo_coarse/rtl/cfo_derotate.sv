@@ -31,13 +31,18 @@ module cfo_derotate (
     logic signed [PHASE_WIDTH-1:0] phase_step_r;
     logic signed [PHASE_WIDTH-1:0] phase_r;
 
+    logic signed [PHASE_WIDTH-1:0] cfo_angle_cast;
+    logic signed [PHASE_WIDTH-1:0] cfo_angle_neg;
+    assign cfo_angle_cast = PHASE_WIDTH'(cfo_angle_i);
+    assign cfo_angle_neg  = -cfo_angle_cast;
+
     always_ff @(posedge clk_i, negedge rstn_i) begin
         if (~rstn_i) begin
             phase_r      <= 'd0;
             phase_step_r <= 'd0;
         end else begin
             if (cfo_valid_i) begin
-                phase_step_r <= - PHASE_WIDTH'(cfo_angle_i);
+                phase_step_r <= cfo_angle_neg;
             end else if (IQ_valid_i) begin
                 phase_r <= phase_r +  phase_step_r;
             end
