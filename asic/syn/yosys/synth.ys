@@ -1,0 +1,43 @@
+# Yosys synthesis script: aperture / iris DSP pipeline -> sky130_fd_sc_hd
+#
+# Run through syn/Makefile (cd aperture/asic/syn; make yosys). It fills in __LIB__, __TOP__,
+# __PERIOD_PS__, __OUT__ and generates the RTL-read step (build/read.ys) for the chosen frontend.
+#
+# iris_core is the ASIC-targetable datapath (byte aligner -> STF detect -> coarse CFO).
+# All flops use async active-low reset -> sky130 dfrtp. File list lives in rtl.f.
+# Paths are relative to this file's directory (aperture/asic/syn).
+
+# ------------------------------------------------------------ read RTL
+# Default frontend is yosys-slang (the RTL uses multi-dimensional packed arrays in
+# cordic_pipe, which Yosys' built-in Verilog frontend rejects). FRONTEND=sv2v is a fallback.
+script __OUT__/read.ys
+
+hierarchy -check -top __TOP__
+
+# ------------------------------------------------------------ generic synthesis
+synth -top __TOP__ -flatten
+opt -full
+check -assert
+
+# ------------------------------------------------------------ sky130 mapping
+# Flops: async-reset -> dfrtp, plain -> dfxtp. Probe / low-power-flow / delay cells excluded;
+# clock buffers are left to CTS.
+dfflibmap -liberty __LIB__ -dont_use sky130_fd_sc_hd__probe_p_8 -dont_use sky130_fd_sc_hd__probec_p_8 -dont_use sky130_fd_sc_hd__lpflow_* -dont_use sky130_fd_sc_hd__clkdlybuf4s* -dont_use sky130_fd_sc_hd__dlygate4sd* -dont_use sky130_fd_sc_hd__dlymetal6s* -dont_use sky130_fd_sc_hd__clkbuf_*
+opt_clean -purge
+
+# Combinational logic. -D is the clock period in ps.
+abc -D __PERIOD_PS__ -constr yosys/abc.constr -liberty __LIB__ -dont_use sky130_fd_sc_hd__probe_p_8 -dont_use sky130_fd_sc_hd__probec_p_8 -dont_use sky130_fd_sc_hd__lpflow_* -dont_use sky130_fd_sc_hd__clkdlybuf4s* -dont_use sky130_fd_sc_hd__dlygate4sd* -dont_use sky130_fd_sc_hd__dlymetal6s* -dont_use sky130_fd_sc_hd__clkbuf_*
+
+# Tie cells + cleanup for P&R
+hilomap -singleton -hicell sky130_fd_sc_hd__conb_1 HI -locell sky130_fd_sc_hd__conb_1 LO
+splitnets
+opt_clean -purge
+insbuf -buf sky130_fd_sc_hd__buf_2 A X
+
+# Load the std cells as blackboxes so `check` knows their pin directions
+read_liberty -overwrite -setattr liberty_cell -lib __LIB__
+check -assert
+
+# ------------------------------------------------------------ reports + outputs
+tee -o __OUT__/__TOP___stat.rpt stat -liberty __LIB__ -width
+write_verilog -noattr -noexpr -nohex -nodec __OUT__/__TOP___netlist.v
