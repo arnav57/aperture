@@ -135,21 +135,13 @@ set_instance_assignment -name IO_STANDARD "2.5 V" -to pll_lock_o
 set_location_assignment PIN_E21 -to pll_lock_o
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to pll_lock_o
 
+# set stf_det to LEDG[1]
+set_location_assignment PIN_E22 -to stf_det_o
+
 # Ethernet: ENET1 RGMII (Marvell Alaska 88E1111, 2.5 V bank)
-set_instance_assignment -name IO_STANDARD "2.5 V" -to ENET1_GTX_CLK
-set_instance_assignment -name IO_STANDARD "2.5 V" -to ENET1_TX_EN
-set_instance_assignment -name IO_STANDARD "2.5 V" -to ENET1_TX_DATA[0]
-set_instance_assignment -name IO_STANDARD "2.5 V" -to ENET1_TX_DATA[1]
-set_instance_assignment -name IO_STANDARD "2.5 V" -to ENET1_TX_DATA[2]
-set_instance_assignment -name IO_STANDARD "2.5 V" -to ENET1_TX_DATA[3]
-set_instance_assignment -name IO_STANDARD "2.5 V" -to ENET1_RX_CLK
-set_instance_assignment -name IO_STANDARD "2.5 V" -to ENET1_RX_DV
-set_instance_assignment -name IO_STANDARD "2.5 V" -to ENET1_RX_DATA[0]
-set_instance_assignment -name IO_STANDARD "2.5 V" -to ENET1_RX_DATA[1]
-set_instance_assignment -name IO_STANDARD "2.5 V" -to ENET1_RX_DATA[2]
-set_instance_assignment -name IO_STANDARD "2.5 V" -to ENET1_RX_DATA[3]
 
 set_location_assignment PIN_C23 -to ENET1_GTX_CLK
+set_location_assignment PIN_D22 -to ENET1_RST_N
 set_location_assignment PIN_B25 -to ENET1_TX_EN
 set_location_assignment PIN_C25 -to ENET1_TX_DATA[0]
 set_location_assignment PIN_A26 -to ENET1_TX_DATA[1]
@@ -167,6 +159,9 @@ set_global_assignment -name SDC_FILE iris_top.sdc
 
 set_global_assignment -name OPTIMIZATION_MODE "AGGRESSIVE PERFORMANCE"
 set_global_assignment -name SEED 2
+
+
+
 
 
 

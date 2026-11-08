@@ -8,7 +8,9 @@ module iris_core (
     // ENET1 Data
     input wire       enet1_rx_tvalid,
     input wire [7:0] enet1_rx_tdata,
-    input wire       enet1_rx_tlast
+    input wire       enet1_rx_tlast,
+
+    output wire      stf_det_o
 
 );
     // Byte Aligner Outputs
@@ -67,7 +69,7 @@ module iris_core (
     	.IQ_valid_o (iq_derot_valid)
     );
 
-
+    assign stf_det_o = stf_det;
 
 endmodule : iris_core
 

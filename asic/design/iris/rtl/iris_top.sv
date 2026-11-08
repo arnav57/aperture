@@ -9,6 +9,7 @@ module iris_top (
 
     // Status Out
     output wire        pll_lock_o,
+    output wire        stf_det_o,
 
     // RGMII Pins
 	output wire        ENET1_GTX_CLK     ,
@@ -16,7 +17,8 @@ module iris_top (
 	output wire [3:0]  ENET1_TX_DATA     ,
 	input  wire        ENET1_RX_CLK      ,
 	input  wire        ENET1_RX_DV       ,
-	input  wire [3:0]  ENET1_RX_DATA
+	input  wire [3:0]  ENET1_RX_DATA     ,
+	output wire        ENET1_RST_N
 
 );
 
@@ -49,6 +51,7 @@ module iris_top (
     logic [7:0] enet1_rx_tdata;
     logic       enet1_rx_tvalid, enet1_rx_tlast;
 
+    assign ENET1_RST_N = 1'b1;
     ethernet I_enet_1 (
         // Clocks and Resets
         .clk_125_i          ( eth_clk_main_fr       ),
@@ -83,7 +86,8 @@ module iris_top (
         .rstn_i             ( rstn_dp_clk               ),
         .enet1_rx_tdata     ( enet1_rx_tdata            ),
         .enet1_rx_tvalid    ( enet1_rx_tvalid           ),
-        .enet1_rx_tlast     ( enet1_rx_tlast            )
+        .enet1_rx_tlast     ( enet1_rx_tlast            ),
+        .stf_det_o          ( stf_det_o                 )
     );
 
 endmodule : iris_top
